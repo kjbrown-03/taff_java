@@ -4,11 +4,6 @@ import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 import Rooms from './pages/Rooms';
 import Reservations from './pages/Reservations';
-import Guests from './pages/Guests';
-import Staff from './pages/Staff';
-import Services from './pages/Services';
-import Payments from './pages/Payments';
-import Reports from './pages/Reports';
 import MainLayout from './components/MainLayout';
 
 const theme = createTheme({
@@ -33,11 +28,6 @@ function App() {
             <Route index element={<Dashboard />} />
             <Route path="rooms" element={<Rooms />} />
             <Route path="reservations" element={<Reservations />} />
-            <Route path="guests" element={<Guests />} />
-            <Route path="staff" element={<Staff />} />
-            <Route path="services" element={<Services />} />
-            <Route path="payments" element={<Payments />} />
-            <Route path="reports" element={<Reports />} />
           </Route>
         </Routes>
       </Router>
