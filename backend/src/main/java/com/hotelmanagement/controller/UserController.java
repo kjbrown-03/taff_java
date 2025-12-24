@@ -1,0 +1,62 @@
+package com.hotelmanagement.controller;
+
+import com.hotelmanagement.dto.UserDto;
+import com.hotelmanagement.mapper.MapperService;
+import com.hotelmanagement.model.User;
+import com.hotelmanagement.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+@RestController
+@RequestMapping("/api/users")
+@CrossOrigin(origins = "*")
+public class UserController {
+
+    @Autowired
+    private UserService userService;
+    
+    @Autowired
+    private MapperService mapperService;
+
+    @GetMapping
+    public ResponseEntity<List<UserDto>> getAllUsers() {
+        List<User> users = userService.getAllUsers();
+        List<UserDto> userDtos = users.stream()
+                .map(user -> mapperService.map(user, UserDto.class))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(userDtos);
+    }
+    @GetMapping("/{id}")
+    public ResponseEntity<UserDto> getUserById(@PathVariable Long id) {
+        return userService.getUserById(id)
+                .map(user -> mapperService.map(user, UserDto.class))
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PostMapping
+    public ResponseEntity<UserDto> createUser(@RequestBody UserDto userDto) {
+        User user = mapperService.map(userDto, User.class);
+        User savedUser = userService.createUser(user);
+        UserDto savedUserDto = mapperService.map(savedUser, UserDto.class);
+        return ResponseEntity.ok(savedUserDto);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<UserDto> updateUser(@PathVariable Long id, @RequestBody UserDto userDto) {
+        User user = mapperService.map(userDto, User.class);
+        User updatedUser = userService.updateUser(id, user);
+        UserDto updatedUserDto = mapperService.map(updatedUser, UserDto.class);
+        return ResponseEntity.ok(updatedUserDto);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+        userService.deleteUser(id);
+        return ResponseEntity.noContent().build();
+    }
+}

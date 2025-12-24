@@ -1,0 +1,15 @@
+{
+    "java.compile.nullAnalysis.mode": "automatic",
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "java.home": "C:\\Program Files\\java_mvn\\jdk-21",
+    "java.jdt.ls.vmargs": "-Xmx2G",
+    // Configure Java runtimes for VS Code. Replace the path below with your JDK 21 installation if different.
+    "java.configuration.runtimes": [
+        {
+            "name": "JavaSE-21",
+            "path": "C:\\Program Files\\java_mvn\\jdk-21",
+            "default": true
+        }
+    ]
+
+}
