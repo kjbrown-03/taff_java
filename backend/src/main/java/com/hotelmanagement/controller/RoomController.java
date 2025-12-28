@@ -69,4 +69,22 @@ public class RoomController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate checkoutDate) {
         return ResponseEntity.ok(roomService.getAvailableRooms(checkinDate, checkoutDate));
     }
+    
+    @GetMapping("/occupied")
+    public ResponseEntity<List<RoomDto>> getOccupiedRooms() {
+        List<Room> rooms = roomService.getOccupiedRooms();
+        List<RoomDto> roomDtos = rooms.stream()
+                .map(room -> mapperService.map(room, RoomDto.class))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(roomDtos);
+    }
+    
+    @GetMapping("/types")
+    public ResponseEntity<List<RoomDto>> getRoomsByType(@RequestParam String type) {
+        List<Room> rooms = roomService.getRoomsByType(type);
+        List<RoomDto> roomDtos = rooms.stream()
+                .map(room -> mapperService.map(room, RoomDto.class))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(roomDtos);
+    }
 }

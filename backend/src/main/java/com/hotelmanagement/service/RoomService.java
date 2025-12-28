@@ -1,6 +1,7 @@
 package com.hotelmanagement.service;
 
 import com.hotelmanagement.model.Room;
+import com.hotelmanagement.model.enums.RoomStatus;
 import com.hotelmanagement.repository.RoomRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -50,5 +51,19 @@ public class RoomService {
 
     public List<Room> getAvailableRooms(LocalDate checkinDate, LocalDate checkoutDate) {
         return roomRepository.findAvailableRooms(checkinDate, checkoutDate);
+    }
+    
+    public List<Room> getOccupiedRooms() {
+        // This would typically check reservations to determine occupancy
+        // For now, returning rooms with status 'OCCUPIED'
+        return roomRepository.findOccupiedRooms();
+    }
+    
+    public List<Room> getRoomsByType(String type) {
+        return roomRepository.findByRoomType(type);
+    }
+    
+    public List<Room> getAvailableRooms() {
+        return roomRepository.findByStatus(com.hotelmanagement.model.enums.RoomStatus.AVAILABLE);
     }
 }

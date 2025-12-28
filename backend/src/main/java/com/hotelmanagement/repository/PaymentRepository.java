@@ -11,4 +11,9 @@ import java.util.List;
 public interface PaymentRepository extends JpaRepository<Payment, Long> {
     List<Payment> findByReservationId(Long reservationId);
     List<Payment> findByStatus(PaymentStatus status);
+    
+    List<Payment> findByStatus(String status);
+    
+    @org.springframework.data.jpa.repository.Query("SELECT p FROM Payment p WHERE DATE(p.paymentDate) = CURRENT_DATE")
+    List<Payment> findTodaysPayments();
 }

@@ -49,4 +49,17 @@ public class PaymentService {
     public List<Payment> getPaymentsByReservationId(Long reservationId) {
         return paymentRepository.findByReservationId(reservationId);
     }
+    
+    public Payment updatePaymentStatus(Long id, String status) {
+        Payment payment = paymentRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Payment not found with id: " + id));
+        
+        payment.setStatus(status);
+        
+        return paymentRepository.save(payment);
+    }
+    
+    public List<Payment> getTodaysPayments() {
+        return paymentRepository.findTodaysPayments();
+    }
 }

@@ -6,6 +6,8 @@ import com.hotelmanagement.model.User;
 import com.hotelmanagement.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -58,5 +60,24 @@ public class UserController {
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();
+    }
+    
+    @PutMapping("/profile")
+    public ResponseEntity<UserDto> updateProfile(@RequestBody UserDto userDto) {
+        User user = mapperService.map(userDto, User.class);
+        User updatedUser = userService.updateProfile(user);
+        UserDto updatedUserDto = mapperService.map(updatedUser, UserDto.class);
+        return ResponseEntity.ok(updatedUserDto);
+    }
+    
+    @GetMapping("/me")
+    public ResponseEntity<UserDto> getMyProfile() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        
+        User user = userService.getAuthenticatedUser(username);
+        UserDto userDto = mapperService.map(user, UserDto.class);
+        
+        return ResponseEntity.ok(userDto);
     }
 }
