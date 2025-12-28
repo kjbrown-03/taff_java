@@ -77,31 +77,31 @@ public class DataInitializationService implements CommandLineRunner {
     private void initializeRolesAndPermissions() {
         // Create permissions
         Permission viewDashboard = permissionRepository.findByName("VIEW_DASHBOARD")
-                .orElseGet(() -> permissionRepository.save(new Permission(null, "VIEW_DASHBOARD", "dashboard", "view", "View dashboard")));
+                .orElseGet(() -> permissionRepository.save(new Permission( "VIEW_DASHBOARD", "dashboard", "view", "View dashboard")));
         
         Permission manageUsers = permissionRepository.findByName("MANAGE_USERS")
-                .orElseGet(() -> permissionRepository.save(new Permission(null, "MANAGE_USERS", "users", "manage", "Manage users")));
+                .orElseGet(() -> permissionRepository.save(new Permission( "MANAGE_USERS", "users", "manage", "Manage users")));
         
         Permission manageRooms = permissionRepository.findByName("MANAGE_ROOMS")
-                .orElseGet(() -> permissionRepository.save(new Permission(null, "MANAGE_ROOMS", "rooms", "manage", "Manage rooms")));
+                .orElseGet(() -> permissionRepository.save(new Permission( "MANAGE_ROOMS", "rooms", "manage", "Manage rooms")));
         
         Permission manageReservations = permissionRepository.findByName("MANAGE_RESERVATIONS")
-                .orElseGet(() -> permissionRepository.save(new Permission(null, "MANAGE_RESERVATIONS", "reservations", "manage", "Manage reservations")));
+                .orElseGet(() -> permissionRepository.save(new Permission( "MANAGE_RESERVATIONS", "reservations", "manage", "Manage reservations")));
         
         Permission manageGuests = permissionRepository.findByName("MANAGE_GUESTS")
-                .orElseGet(() -> permissionRepository.save(new Permission(null, "MANAGE_GUESTS", "guests", "manage", "Manage guests")));
+                .orElseGet(() -> permissionRepository.save(new Permission( "MANAGE_GUESTS", "guests", "manage", "Manage guests")));
         
         Permission managePayments = permissionRepository.findByName("MANAGE_PAYMENTS")
-                .orElseGet(() -> permissionRepository.save(new Permission(null, "MANAGE_PAYMENTS", "payments", "manage", "Manage payments")));
+                .orElseGet(() -> permissionRepository.save(new Permission( "MANAGE_PAYMENTS", "payments", "manage", "Manage payments")));
         
         Permission manageServices = permissionRepository.findByName("MANAGE_SERVICES")
-                .orElseGet(() -> permissionRepository.save(new Permission(null, "MANAGE_SERVICES", "services", "manage", "Manage services")));
+                .orElseGet(() -> permissionRepository.save(new Permission( "MANAGE_SERVICES", "services", "manage", "Manage services")));
         
         Permission manageStaff = permissionRepository.findByName("MANAGE_STAFF")
-                .orElseGet(() -> permissionRepository.save(new Permission(null, "MANAGE_STAFF", "staff", "manage", "Manage staff")));
+                .orElseGet(() -> permissionRepository.save(new Permission( "MANAGE_STAFF", "staff", "manage", "Manage staff")));
         
         Permission generateReports = permissionRepository.findByName("GENERATE_REPORTS")
-                .orElseGet(() -> permissionRepository.save(new Permission(null, "GENERATE_REPORTS", "reports", "generate", "Generate reports")));
+                .orElseGet(() -> permissionRepository.save(new Permission( "GENERATE_REPORTS", "reports", "generate", "Generate reports")));
 
         // Create roles
         Role adminRole = roleRepository.findByName("ADMIN")
