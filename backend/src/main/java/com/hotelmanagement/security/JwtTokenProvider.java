@@ -25,11 +25,17 @@ public class JwtTokenProvider {
 
     public String generateToken(Authentication authentication) {
         String username = authentication.getName();
+        // collect roles from authorities
+        var authorities = authentication.getAuthorities();
+        java.util.List<String> roles = authorities.stream()
+                .map(a -> a.getAuthority())
+                .toList();
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpiration);
 
         return Jwts.builder()
                 .setSubject(username)
+                .claim("roles", roles)
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
                 .signWith(getSigningKey(), SignatureAlgorithm.HS512)

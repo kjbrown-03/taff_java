@@ -46,6 +46,35 @@ public class AuthService {
         return response;
     }
 
+    public Map<String, Object> authenticateByNameAndPhone(String name, String phone, String password) {
+        User user = userRepository.findByPhone(phone)
+                .orElseThrow(() -> new RuntimeException("User not found with phone: " + phone));
+
+        // Accept if provided name matches firstName or username
+        boolean nameMatches = false;
+        if (user.getFirstName() != null && user.getFirstName().equalsIgnoreCase(name)) {
+            nameMatches = true;
+        }
+        if (!nameMatches && user.getUsername() != null && user.getUsername().equalsIgnoreCase(name)) {
+            nameMatches = true;
+        }
+        if (!nameMatches) {
+            throw new RuntimeException("Name does not match phone record");
+        }
+
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(user.getUsername(), password));
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        String jwt = tokenProvider.generateToken(authentication);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("token", jwt);
+        response.put("user", user);
+
+        return response;
+    }
+
     public User registerUser(User user) {
         if (userRepository.existsByUsername(user.getUsername())) {
             throw new RuntimeException("Username is already taken!");

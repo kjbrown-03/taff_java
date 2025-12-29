@@ -7,3 +7,4 @@ public enum RoomStatus {
     RESERVED,
     CLEANING
 }
+

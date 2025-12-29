@@ -2,6 +2,7 @@ package com.hotelmanagement.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
@@ -9,6 +10,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "messages")
 @Data
+@EqualsAndHashCode(callSuper = true)
 public class Message extends BaseEntity {
     
     @ManyToOne

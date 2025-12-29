@@ -54,8 +54,13 @@ public class PaymentService {
         Payment payment = paymentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Payment not found with id: " + id));
         
-        payment.setStatus(status);
-        
+        try {
+            com.hotelmanagement.model.enums.PaymentStatus ps = com.hotelmanagement.model.enums.PaymentStatus.valueOf(status.toUpperCase());
+            payment.setStatus(ps);
+        } catch (IllegalArgumentException ex) {
+            throw new RuntimeException("Invalid payment status: " + status);
+        }
+
         return paymentRepository.save(payment);
     }
     

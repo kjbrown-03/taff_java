@@ -26,9 +26,9 @@ public class ReportController {
     public ResponseEntity<Map<String, Object>> getOccupationReport() {
         Map<String, Object> report = new HashMap<>();
         
-        List<Object> allRooms = (List<Object>) roomService.getAllRooms();
-        List<Object> occupiedRooms = (List<Object>) roomService.getOccupiedRooms();
-        
+        List<?> allRooms = roomService.getAllRooms();
+        List<?> occupiedRooms = roomService.getOccupiedRooms();
+
         double totalRooms = allRooms.size();
         double occupiedCount = occupiedRooms.size();
         double occupationRate = totalRooms > 0 ? (occupiedCount / totalRooms) * 100 : 0;

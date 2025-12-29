@@ -44,7 +44,7 @@ public class MapperService {
         TimesheetDto dto = new TimesheetDto();
         dto.setId(timesheet.getId());
         dto.setStaffId(timesheet.getStaff().getId());
-        dto.setStaffName(timesheet.getStaff().getUsername());
+        dto.setStaffName(timesheet.getStaff().getUser().getUsername());
         dto.setDate(timesheet.getDate());
         dto.setCheckInTime(timesheet.getCheckInTime());
         dto.setCheckOutTime(timesheet.getCheckOutTime());

@@ -2,6 +2,7 @@ package com.hotelmanagement.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDate;
@@ -11,6 +12,7 @@ import java.time.LocalTime;
 @Entity
 @Table(name = "timesheets")
 @Data
+@EqualsAndHashCode(callSuper = true)
 public class Timesheet extends BaseEntity {
     
     @ManyToOne

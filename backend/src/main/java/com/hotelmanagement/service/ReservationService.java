@@ -58,4 +58,8 @@ public class ReservationService {
     public List<Reservation> getCurrentReservations() {
         return reservationRepository.findCurrentReservations(LocalDate.now());
     }
+
+    public List<Reservation> getTodaysReservations() {
+        return reservationRepository.findCurrentReservations(LocalDate.now());
+    }
 }

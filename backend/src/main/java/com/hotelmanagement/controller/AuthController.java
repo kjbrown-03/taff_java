@@ -25,6 +25,13 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/login-phone")
+    public ResponseEntity<Map<String, Object>> loginByPhone(@RequestBody com.hotelmanagement.dto.LoginPhoneDto loginPhoneDto) {
+        Map<String, Object> response = authService.authenticateByNameAndPhone(
+                loginPhoneDto.getName(), loginPhoneDto.getPhone(), loginPhoneDto.getPassword());
+        return ResponseEntity.ok(response);
+    }
+
     @PostMapping("/register")
     public ResponseEntity<User> register(@RequestBody RegisterDto registerDto) {
         User user = new User();
