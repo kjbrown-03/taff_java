@@ -74,4 +74,20 @@ public class DashboardController {
         
         return ResponseEntity.ok(dashboardData);
     }
+    
+    @GetMapping("/stats")
+    public ResponseEntity<Map<String, Object>> getStats() {
+        Map<String, Object> stats = new HashMap<>();
+        
+        stats.put("totalRooms", roomService.getAllRooms().size());
+        stats.put("occupiedRooms", roomService.getOccupiedRooms().size());
+        stats.put("totalGuests", userService.getAllUsers().size());
+        stats.put("staffMembers", staffService.getAllStaff().size());
+        stats.put("services", 0); // Placeholder
+        stats.put("todayRevenue", paymentService.getTodaysPayments().stream()
+                .mapToDouble(p -> p.getAmount().doubleValue())
+                .sum());
+        
+        return ResponseEntity.ok(stats);
+    }
 }

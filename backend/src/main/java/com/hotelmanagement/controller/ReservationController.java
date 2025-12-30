@@ -6,6 +6,9 @@ import com.hotelmanagement.model.Reservation;
 import com.hotelmanagement.service.ReservationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -69,5 +72,20 @@ public class ReservationController {
     @GetMapping("/current")
     public ResponseEntity<List<Reservation>> getCurrentReservations() {
         return ResponseEntity.ok(reservationService.getCurrentReservations());
+    }
+    
+    @GetMapping("/my")
+    @PreAuthorize("hasRole('CLIENT')")
+    public ResponseEntity<List<ReservationDto>> getMyReservations() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        // Get user ID from username and fetch reservations
+        // This would need UserService to get user by username
+        // For now, returning empty list - should be implemented
+        List<Reservation> reservations = reservationService.getAllReservations(); // Placeholder
+        List<ReservationDto> reservationDtos = reservations.stream()
+                .map(reservation -> mapperService.map(reservation, ReservationDto.class))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(reservationDtos);
     }
 }

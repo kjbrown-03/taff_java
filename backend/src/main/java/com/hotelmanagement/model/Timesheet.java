@@ -3,10 +3,8 @@ package com.hotelmanagement.model;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 @Entity
@@ -31,8 +29,6 @@ public class Timesheet extends BaseEntity {
     @Column(name = "hours_worked")
     private Double hoursWorked;
     
-    @CreationTimestamp
-    private LocalDateTime createdAt;
-    
-    private LocalDateTime updatedAt;
-}
+    // createdAt and updatedAt are inherited from BaseEntity (auditing)
+    // Remove duplicate fields to avoid conflicts
+ }

@@ -12,8 +12,8 @@ import java.util.List;
 
 @Repository
 public interface ReservationRepository extends JpaRepository<Reservation, Long> {
-    List<Reservation> findByGuestId(Long guestId);
-    List<Reservation> findByRoomId(Long roomId);
+    List<Reservation> findByGuest_Id(Long guestId);
+    List<Reservation> findByRoom_Id(Long roomId);
     List<Reservation> findByStatus(ReservationStatus status);
     
     @Query("SELECT r FROM Reservation r WHERE r.checkInDate <= :date AND r.checkOutDate >= :date AND r.status = 'CONFIRMED'")

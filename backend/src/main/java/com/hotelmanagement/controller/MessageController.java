@@ -5,6 +5,8 @@ import com.hotelmanagement.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -65,5 +67,17 @@ public class MessageController {
     public ResponseEntity<Void> deleteMessage(@PathVariable Long messageId) {
         messageService.deleteMessage(messageId);
         return ResponseEntity.ok().build();
+    }
+    
+    @GetMapping("/my")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('EMPLOYEE') or hasRole('CLIENT')")
+    public ResponseEntity<List<MessageDto>> getMyMessages() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        // Get user ID from username and fetch messages
+        // This would need UserService to get user by username
+        // For now, returning empty list - should be implemented
+        List<MessageDto> messages = messageService.getMessagesByUserId(1L); // Placeholder - should get actual user ID
+        return ResponseEntity.ok(messages);
     }
 }

@@ -1,8 +1,9 @@
 package com.hotelmanagement.service;
 
 import com.hotelmanagement.model.Room;
-import com.hotelmanagement.model.enums.RoomStatus;
+import com.hotelmanagement.model.RoomType;
 import com.hotelmanagement.repository.RoomRepository;
+import com.hotelmanagement.repository.RoomTypeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +16,8 @@ public class RoomService {
 
     @Autowired
     private RoomRepository roomRepository;
+    @Autowired
+    private RoomTypeRepository roomTypeRepository;
 
     public List<Room> getAllRooms() {
         return roomRepository.findAll();
@@ -60,7 +63,11 @@ public class RoomService {
     }
     
     public List<Room> getRoomsByType(String type) {
-        return roomRepository.findByRoomType(type);
+        RoomType rt = roomTypeRepository.findByName(type).orElse(null);
+        if (rt == null) {
+            return List.of();
+        }
+        return roomRepository.findByRoomType(rt);
     }
     
     public List<Room> getAvailableRooms() {

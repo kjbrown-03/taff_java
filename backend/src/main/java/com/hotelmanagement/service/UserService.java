@@ -3,11 +3,19 @@ package com.hotelmanagement.service;
 import com.hotelmanagement.model.User;
 import com.hotelmanagement.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class UserService {
@@ -17,6 +25,9 @@ public class UserService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Value("${app.upload.dir:uploads}")
+    private String uploadDir;
 
     public List<User> getAllUsers() {
         return userRepository.findAll();
@@ -78,5 +89,36 @@ public class UserService {
     public User getAuthenticatedUser(String username) {
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found with username: " + username));
+    }
+    
+    public User uploadProfilePhoto(String username, MultipartFile file) {
+        User user = getAuthenticatedUser(username);
+        
+        try {
+            // Create upload directory if it doesn't exist
+            Path uploadPath = Paths.get(uploadDir);
+            if (!Files.exists(uploadPath)) {
+                Files.createDirectories(uploadPath);
+            }
+            
+            // Generate unique filename
+            String originalFilename = file.getOriginalFilename();
+            String extension = originalFilename != null && originalFilename.contains(".") 
+                ? originalFilename.substring(originalFilename.lastIndexOf(".")) 
+                : "";
+            String filename = UUID.randomUUID().toString() + extension;
+            
+            // Save file
+            Path filePath = uploadPath.resolve(filename);
+            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+            
+            // Update user profile image path
+            String imageUrl = "/uploads/" + filename;
+            user.setProfileImage(imageUrl);
+            
+            return userRepository.save(user);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to upload profile photo: " + e.getMessage());
+        }
     }
 }

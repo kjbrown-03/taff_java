@@ -24,20 +24,17 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
     List<Room> findByStatus(RoomStatus status);
 
     // Méthodes personnalisées avec requêtes JPQL
-    @Query("SELECT r FROM Room r WHERE r.id NOT IN " +
-            "(SELECT res.room.id FROM Reservation res " +
-            "WHERE res.checkInDate < :checkoutDate " +
-            "AND res.checkOutDate > :checkinDate " +
-            "AND res.status IN ('CONFIRMED', 'CHECKED_IN'))")
-    List<Room> findAvailableRooms(
-            @Param("checkinDate") LocalDate checkinDate,
-            @Param("checkoutDate") LocalDate checkoutDate);
+    @Query(value = "SELECT * FROM rooms r WHERE r.id NOT IN (" +
+            "SELECT room_id FROM reservations res WHERE res.check_in_date < :checkoutDate " +
+            "AND res.check_out_date > :checkinDate AND res.status IN ('CONFIRMED','CHECKED_IN')" +
+            ")", nativeQuery = true)
+    List<Room> findAvailableRooms(@Param("checkinDate") LocalDate checkinDate,
+                                  @Param("checkoutDate") LocalDate checkoutDate);
 
-    @Query("SELECT r FROM Room r WHERE r.id IN " +
-            "(SELECT res.room.id FROM Reservation res " +
-            "WHERE res.checkInDate <= CURRENT_DATE " +
-            "AND res.checkOutDate >= CURRENT_DATE " +
-            "AND res.status IN ('CONFIRMED', 'CHECKED_IN'))")
+    @Query(value = "SELECT * FROM rooms r WHERE r.id IN (" +
+            "SELECT room_id FROM reservations res WHERE res.check_in_date <= CURRENT_DATE " +
+            "AND res.check_out_date >= CURRENT_DATE AND res.status IN ('CONFIRMED','CHECKED_IN')" +
+            ")", nativeQuery = true)
     List<Room> findOccupiedRooms();
 
     // Supprimé : findByRoomTypeId(Long) → probablement inutile si tu as l'enum RoomType

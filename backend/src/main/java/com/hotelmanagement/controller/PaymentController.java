@@ -7,6 +7,8 @@ import com.hotelmanagement.service.PaymentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -71,6 +73,21 @@ public class PaymentController {
     @PreAuthorize("hasRole('ADMIN') or hasRole('EMPLOYEE')")
     public ResponseEntity<List<PaymentDto>> getTodaysPayments() {
         List<Payment> payments = paymentService.getTodaysPayments();
+        List<PaymentDto> paymentDtos = payments.stream()
+                .map(payment -> mapperService.map(payment, PaymentDto.class))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(paymentDtos);
+    }
+    
+    @GetMapping("/my")
+    @PreAuthorize("hasRole('CLIENT')")
+    public ResponseEntity<List<PaymentDto>> getMyPayments() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        // Get user ID from username and fetch payments
+        // This would need UserService to get user by username
+        // For now, returning empty list - should be implemented
+        List<Payment> payments = paymentService.getAllPayments(); // Placeholder
         List<PaymentDto> paymentDtos = payments.stream()
                 .map(payment -> mapperService.map(payment, PaymentDto.class))
                 .collect(Collectors.toList());

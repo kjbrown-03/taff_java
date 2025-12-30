@@ -49,6 +49,6 @@ public class InvoiceService {
     }
 
     public List<Invoice> getInvoicesByReservationId(Long reservationId) {
-        return invoiceRepository.findByReservationId(reservationId);
+        return invoiceRepository.findByReservation_Id(reservationId);
     }
 }

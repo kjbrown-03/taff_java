@@ -33,7 +33,7 @@ public class TimesheetServiceImpl implements TimesheetService {
                 .orElseThrow(() -> new RuntimeException("Staff not found"));
 
         // Check if timesheet already exists for this date
-        if (timesheetRepository.findByStaffIdAndDate(staffId, date).isPresent()) {
+        if (timesheetRepository.findByStaff_IdAndDate(staffId, date).isPresent()) {
             throw new RuntimeException("Timesheet already exists for this date");
         }
 
@@ -75,7 +75,7 @@ public class TimesheetServiceImpl implements TimesheetService {
 
     @Override
     public List<TimesheetDto> getTimesheetsByStaffId(Long staffId) {
-        List<Timesheet> timesheets = timesheetRepository.findByStaffId(staffId);
+        List<Timesheet> timesheets = timesheetRepository.findByStaff_Id(staffId);
         return timesheets.stream()
                 .map(mapperService::toTimesheetDto)
                 .collect(Collectors.toList());
@@ -92,7 +92,7 @@ public class TimesheetServiceImpl implements TimesheetService {
 
     @Override
     public TimesheetDto getTimesheetByStaffIdAndDate(Long staffId, LocalDate date) {
-        Timesheet timesheet = timesheetRepository.findByStaffIdAndDate(staffId, date)
+        Timesheet timesheet = timesheetRepository.findByStaff_IdAndDate(staffId, date)
                 .orElseThrow(() -> new RuntimeException("Timesheet not found for the given staff and date"));
         return mapperService.toTimesheetDto(timesheet);
     }

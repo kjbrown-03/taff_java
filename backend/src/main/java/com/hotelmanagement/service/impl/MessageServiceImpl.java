@@ -42,8 +42,8 @@ public class MessageServiceImpl implements MessageService {
 
     @Override
     public List<MessageDto> getMessagesBetweenUsers(Long userId1, Long userId2) {
-        List<Message> messages1 = messageRepository.findBySenderIdAndReceiverIdOrderByTimestampDesc(userId1, userId2);
-        List<Message> messages2 = messageRepository.findByReceiverIdAndSenderIdOrderByTimestampDesc(userId2, userId1);
+        List<Message> messages1 = messageRepository.findBySender_IdAndReceiver_IdOrderByTimestampDesc(userId1, userId2);
+        List<Message> messages2 = messageRepository.findByReceiver_IdAndSender_IdOrderByTimestampDesc(userId2, userId1);
 
         List<Message> allMessages = new java.util.ArrayList<>();
         allMessages.addAll(messages1);
@@ -65,7 +65,7 @@ public class MessageServiceImpl implements MessageService {
 
     @Override
     public List<MessageDto> getUnreadMessages(Long userId) {
-        List<Message> messages = messageRepository.findByReceiverIdAndIsReadFalse(userId);
+        List<Message> messages = messageRepository.findByReceiver_IdAndIsReadFalse(userId);
         return messages.stream()
                 .map(mapperService::toMessageDto)
                 .collect(Collectors.toList());

@@ -46,6 +46,6 @@ public class ServiceBookingService {
     }
 
     public List<ServiceBooking> getServiceBookingsByReservationId(Long reservationId) {
-        return serviceBookingRepository.findByReservationId(reservationId);
+        return serviceBookingRepository.findByReservation_Id(reservationId);
     }
 }

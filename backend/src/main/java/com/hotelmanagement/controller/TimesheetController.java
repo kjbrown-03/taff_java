@@ -91,4 +91,27 @@ public class TimesheetController {
         timesheetService.deleteTimesheet(id);
         return ResponseEntity.ok().build();
     }
+    
+    @PostMapping("/checkin")
+    @PreAuthorize("hasRole('EMPLOYEE')")
+    public ResponseEntity<TimesheetDto> checkIn(@RequestBody java.util.Map<String, String> request) {
+        Long staffId = Long.parseLong(request.get("staffId"));
+        String time = request.get("time");
+        java.time.LocalTime checkInTime = java.time.LocalTime.parse(time);
+        java.time.LocalDate date = java.time.LocalDate.now();
+        
+        TimesheetDto timesheet = timesheetService.createTimesheet(staffId, date, checkInTime);
+        return ResponseEntity.ok(timesheet);
+    }
+    
+    @PostMapping("/checkout")
+    @PreAuthorize("hasRole('EMPLOYEE')")
+    public ResponseEntity<TimesheetDto> checkOut(@RequestBody java.util.Map<String, String> request) {
+        Long timesheetId = Long.parseLong(request.get("timesheetId"));
+        String time = request.get("time");
+        java.time.LocalTime checkOutTime = java.time.LocalTime.parse(time);
+        
+        TimesheetDto timesheet = timesheetService.updateTimesheet(timesheetId, checkOutTime);
+        return ResponseEntity.ok(timesheet);
+    }
 }

@@ -52,7 +52,7 @@ public class ReservationService {
     }
 
     public List<Reservation> getReservationsByGuestId(Long guestId) {
-        return reservationRepository.findByGuestId(guestId);
+        return reservationRepository.findByGuest_Id(guestId);
     }
 
     public List<Reservation> getCurrentReservations() {
