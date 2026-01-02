@@ -30,20 +30,54 @@ public class AuthService {
     private JwtTokenProvider tokenProvider;
 
     public Map<String, Object> authenticateUser(String username, String password) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(username, password));
+        try {
+            System.out.println("=== AUTHENTICATION DEBUG ===");
+            System.out.println("Attempting to authenticate user: " + username);
+            
+            // First, find the user by username
+            User user = userRepository.findByUsername(username)
+                    .orElseThrow(() -> {
+                        System.out.println("USER NOT FOUND: " + username);
+                        return new RuntimeException("User not found");
+                    });
+            
+            System.out.println("USER FOUND: " + user.getUsername());
+            System.out.println("USER ID: " + user.getId());
+            System.out.println("USER ENABLED: " + user.getEnabled());
+            System.out.println("USER ROLE: " + user.getRole().getName());
+            System.out.println("Password hash length: " + user.getPassword().length());
+            
+            // Then authenticate using the user's actual username and provided password
+            System.out.println("Attempting authentication with password...");
+            System.out.println(">>> TENTATIVE LOGIN - username: " + user.getUsername() + ", password: [HIDDEN]");
+            
+            try {
+                Authentication authentication = authenticationManager.authenticate(
+                        new UsernamePasswordAuthenticationToken(user.getUsername(), password));
+                System.out.println(">>> AUTHENTIFICATION RÉUSSIE !!");
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        String jwt = tokenProvider.generateToken(authentication);
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+                String jwt = tokenProvider.generateToken(authentication);
 
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                Map<String, Object> response = new HashMap<>();
+                response.put("token", jwt);
+                response.put("user", user);
 
-        Map<String, Object> response = new HashMap<>();
-        response.put("token", jwt);
-        response.put("user", user);
-
-        return response;
+                System.out.println("=== AUTHENTICATION COMPLETE ===");
+                return response;
+            } catch (Exception e) {
+                System.out.println(">>> ÉCHEC AUTHENTIFICATION : " + e.getMessage());
+                e.printStackTrace();
+                throw e;
+            }
+        } catch (org.springframework.security.authentication.BadCredentialsException e) {
+            System.out.println("AUTHENTICATION FAILED: Invalid credentials");
+            throw new RuntimeException("Invalid credentials");
+        } catch (Exception e) {
+            System.out.println("AUTHENTICATION ERROR: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
+        }
     }
 
     public Map<String, Object> authenticateByNameAndPhone(String name, String phone, String password) {

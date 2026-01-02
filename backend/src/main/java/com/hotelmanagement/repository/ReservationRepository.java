@@ -12,13 +12,35 @@ import java.util.List;
 
 @Repository
 public interface ReservationRepository extends JpaRepository<Reservation, Long> {
-    List<Reservation> findByGuest_Id(Long guestId);
-    List<Reservation> findByRoom_Id(Long roomId);
+
+    // Reservations par guest (via guest_id dans Reservation)
+    List<Reservation> findByGuestId(Long guestId);
+
+    // Reservations par room (via room_id dans Reservation)
+    List<Reservation> findByRoomId(Long roomId);
+
+    // Reservations par statut
     List<Reservation> findByStatus(ReservationStatus status);
-    
-    @Query("SELECT r FROM Reservation r WHERE r.checkInDate <= :date AND r.checkOutDate >= :date AND r.status = 'CONFIRMED'")
+
+    // Reservations actuelles (occupées à une date donnée)
+    @Query("SELECT r FROM Reservation r " +
+            "WHERE r.checkInDate <= :date " +
+            "AND r.checkOutDate >= :date " +
+            "AND r.status IN ('CONFIRMED', 'CHECKED_IN')")
     List<Reservation> findCurrentReservations(@Param("date") LocalDate date);
-    
-    @Query("SELECT COUNT(r) FROM Reservation r WHERE r.room.id = :roomId AND r.checkInDate < :checkoutDate AND r.checkOutDate > :checkinDate AND r.status IN ('CONFIRMED', 'CHECKED_IN')")
-    Long countOverlappingReservations(@Param("roomId") Long roomId, @Param("checkinDate") LocalDate checkinDate, @Param("checkoutDate") LocalDate checkoutDate);
+
+    // Vérifie les chevauchements pour une chambre (utile pour éviter double réservation)
+    @Query("SELECT COUNT(r) FROM Reservation r " +
+            "WHERE r.room.id = :roomId " +
+            "AND r.checkInDate < :checkoutDate " +
+            "AND r.checkOutDate > :checkinDate " +
+            "AND r.status IN ('CONFIRMED', 'CHECKED_IN')")
+    Long countOverlappingReservations(
+            @Param("roomId") Long roomId,
+            @Param("checkinDate") LocalDate checkinDate,
+            @Param("checkoutDate") LocalDate checkoutDate);
+
+    // Bonus : toutes les réservations d'un guest (plus robuste que findByGuestId si besoin)
+    @Query("SELECT r FROM Reservation r WHERE r.guest.id = :guestId")
+    List<Reservation> findAllByGuestId(@Param("guestId") Long guestId);
 }

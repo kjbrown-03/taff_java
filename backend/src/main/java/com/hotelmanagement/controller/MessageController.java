@@ -1,6 +1,7 @@
 package com.hotelmanagement.controller;
 
 import com.hotelmanagement.dto.MessageDto;
+import com.hotelmanagement.model.User;
 import com.hotelmanagement.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -74,10 +75,10 @@ public class MessageController {
     public ResponseEntity<List<MessageDto>> getMyMessages() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
+        
         // Get user ID from username and fetch messages
-        // This would need UserService to get user by username
-        // For now, returning empty list - should be implemented
-        List<MessageDto> messages = messageService.getMessagesByUserId(1L); // Placeholder - should get actual user ID
+        User user = messageService.getUserByUsername(username);
+        List<MessageDto> messages = messageService.getMessagesByUserId(user.getId());
         return ResponseEntity.ok(messages);
     }
 }

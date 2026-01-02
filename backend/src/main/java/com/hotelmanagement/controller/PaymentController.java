@@ -3,6 +3,7 @@ package com.hotelmanagement.controller;
 import com.hotelmanagement.dto.PaymentDto;
 import com.hotelmanagement.mapper.MapperService;
 import com.hotelmanagement.model.Payment;
+import com.hotelmanagement.model.User;
 import com.hotelmanagement.service.PaymentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -68,7 +69,7 @@ public class PaymentController {
         PaymentDto updatedPaymentDto = mapperService.map(updatedPayment, PaymentDto.class);
         return ResponseEntity.ok(updatedPaymentDto);
     }
-    
+
     @GetMapping("/today")
     @PreAuthorize("hasRole('ADMIN') or hasRole('EMPLOYEE')")
     public ResponseEntity<List<PaymentDto>> getTodaysPayments() {
@@ -78,19 +79,26 @@ public class PaymentController {
                 .collect(Collectors.toList());
         return ResponseEntity.ok(paymentDtos);
     }
-    
+
     @GetMapping("/my")
     @PreAuthorize("hasRole('CLIENT')")
     public ResponseEntity<List<PaymentDto>> getMyPayments() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
-        // Get user ID from username and fetch payments
-        // This would need UserService to get user by username
-        // For now, returning empty list - should be implemented
-        List<Payment> payments = paymentService.getAllPayments(); // Placeholder
+
+        User user = paymentService.getUserByUsername(username);
+
+        // Temporaire : retourne liste vide pour que l'app démarre
+        // On implémentera la vraie logique plus tard (ex: via guestId ou reservations)
+        List<Payment> payments = List.of();
+
+        // Si tu as une méthode getPaymentsByGuestId dans PaymentService :
+        // List<Payment> payments = paymentService.getPaymentsByGuestId(user.getGuestId());
+
         List<PaymentDto> paymentDtos = payments.stream()
                 .map(payment -> mapperService.map(payment, PaymentDto.class))
                 .collect(Collectors.toList());
+
         return ResponseEntity.ok(paymentDtos);
     }
 }

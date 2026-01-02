@@ -1,18 +1,21 @@
 package com.hotelmanagement.service;
 
 import com.hotelmanagement.model.Payment;
+import com.hotelmanagement.model.User;
 import com.hotelmanagement.repository.PaymentRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.hotelmanagement.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class PaymentService {
 
-    @Autowired
-    private PaymentRepository paymentRepository;
+    private final PaymentRepository paymentRepository;
+    private final UserRepository userRepository;
 
     public List<Payment> getAllPayments() {
         return paymentRepository.findAll();
@@ -46,14 +49,15 @@ public class PaymentService {
         paymentRepository.deleteById(id);
     }
 
+    // Corrigé : bonne méthode
     public List<Payment> getPaymentsByReservationId(Long reservationId) {
-        return paymentRepository.findByReservation_Id(reservationId);
+        return paymentRepository.findByReservationId(reservationId);
     }
-    
+
     public Payment updatePaymentStatus(Long id, String status) {
         Payment payment = paymentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Payment not found with id: " + id));
-        
+
         try {
             com.hotelmanagement.model.enums.PaymentStatus ps = com.hotelmanagement.model.enums.PaymentStatus.valueOf(status.toUpperCase());
             payment.setStatus(ps);
@@ -63,8 +67,20 @@ public class PaymentService {
 
         return paymentRepository.save(payment);
     }
-    
+
+    // Corrigé : méthode existante
     public List<Payment> getTodaysPayments() {
         return paymentRepository.findTodaysPayments();
+    }
+
+    // Supprimé findByUserId → causait le crash
+    // Remplacé par une méthode sûre si besoin
+    public List<Payment> getPaymentsByGuestId(Long guestId) {
+        return paymentRepository.findByGuestId(guestId);
+    }
+
+    public User getUserByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found with username: " + username));
     }
 }
