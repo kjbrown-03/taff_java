@@ -17,6 +17,8 @@ import Profile from './pages/Profile';
 import AdminDashboard from './pages/dashboard/AdminDashboard';
 import ClientDashboard from './pages/dashboard/ClientDashboard';
 import EmployeeDashboard from './pages/dashboard/EmployeeDashboard';
+import ReceptionistDashboard from './pages/dashboard/ReceptionistDashboard';
+import ManagerDashboard from './pages/dashboard/ManagerDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 import { ThemeProviderWrapper } from './context/ThemeContext';
 
@@ -45,6 +47,8 @@ const App = () => {
               <Route path="reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
               {/* Profile route is now available at /profile (public) and /dashboard/profile (protected) */}
               <Route path="admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+              <Route path="receptionist" element={<ProtectedRoute><ReceptionistDashboard /></ProtectedRoute>} />
+              <Route path="manager" element={<ProtectedRoute><ManagerDashboard /></ProtectedRoute>} />
               <Route path="client" element={<ProtectedRoute><ClientDashboard /></ProtectedRoute>} />
               <Route path="employee" element={<ProtectedRoute><EmployeeDashboard /></ProtectedRoute>} />
             </Route>

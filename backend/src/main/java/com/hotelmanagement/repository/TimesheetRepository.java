@@ -1,6 +1,5 @@
 package com.hotelmanagement.repository;
 
-import com.hotelmanagement.model.Staff;
 import com.hotelmanagement.model.Timesheet;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

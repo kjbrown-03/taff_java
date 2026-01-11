@@ -14,10 +14,10 @@ import java.util.List;
 public interface ReservationRepository extends JpaRepository<Reservation, Long> {
 
     // Reservations par guest (via guest_id dans Reservation)
-    List<Reservation> findByGuestId(Long guestId);
+    List<Reservation> findByGuest_Id(Long guestId);
 
     // Reservations par room (via room_id dans Reservation)
-    List<Reservation> findByRoomId(Long roomId);
+    List<Reservation> findByRoom_Id(Long roomId);
 
     // Reservations par statut
     List<Reservation> findByStatus(ReservationStatus status);

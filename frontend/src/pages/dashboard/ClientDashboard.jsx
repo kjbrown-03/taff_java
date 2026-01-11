@@ -13,16 +13,23 @@ import {
   TableHead,
   TableRow,
   Paper,
-  Alert
+  Alert,
+  Fade,
+  Grow,
+  Chip,
+  CircularProgress
 } from '@mui/material';
 import { 
   BookOnline as ReservationsIcon,
   Payment as PaymentsIcon,
   People as GuestsIcon,
   LocalHotel as RoomsIcon,
-  Chat as ChatIcon
+  Chat as ChatIcon,
+  AccountCircle,
+  Star
 } from '@mui/icons-material';
 import api from '../../services/api';
+import './Dashboard.css';
 
 const ClientDashboard = () => {
   const [reservations, setReservations] = useState([]);
@@ -30,23 +37,21 @@ const ClientDashboard = () => {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [userInfo, setUserInfo] = useState(null);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        // Fetch client reservations
-        const reservationsResponse = await api.get('/reservations/my');
-        setReservations(reservationsResponse.data);
+        setLoading(true);
+        const response = await api.get('/api/dashboard/client');
+        const data = response.data;
         
-        // Fetch client payments
-        const paymentsResponse = await api.get('/payments/my');
-        setPayments(paymentsResponse.data);
-        
-        // Fetch client messages
-        const messagesResponse = await api.get('/messages/my');
-        setMessages(messagesResponse.data);
+        setUserInfo(data.user);
+        setReservations(Array.isArray(data.myReservations) ? data.myReservations : []);
+        setPayments([]);
+        setMessages([]);
       } catch (err) {
-        setError('Failed to load dashboard data');
+        setError('Erreur lors du chargement des données. Vérifiez votre connexion.');
         console.error('Error fetching dashboard data:', err);
       } finally {
         setLoading(false);
@@ -57,179 +62,221 @@ const ClientDashboard = () => {
   }, []);
 
   const statsData = [
-    { title: 'Total Reservations', value: reservations.length, icon: <ReservationsIcon sx={{ fontSize: 40 }} />, color: '#1976d2' },
-    { title: 'Total Payments', value: payments.length, icon: <PaymentsIcon sx={{ fontSize: 40 }} />, color: '#4caf50' },
-    { title: 'Unpaid Amount', value: '$0', icon: <PaymentsIcon sx={{ fontSize: 40 }} />, color: '#ff9800' },
-    { title: 'Active Reservations', value: reservations.filter(r => r.status === 'CONFIRMED').length, icon: <RoomsIcon sx={{ fontSize: 40 }} />, color: '#9c27b0' },
+    { 
+      title: 'Mes Réservations', 
+      value: reservations.length, 
+      icon: <ReservationsIcon sx={{ fontSize: 50 }} />, 
+      gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+    },
+    { 
+      title: 'Chambres Disponibles', 
+      value: userInfo?.availableRooms || 0, 
+      icon: <RoomsIcon sx={{ fontSize: 50 }} />, 
+      gradient: 'linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%)'
+    },
+    { 
+      title: 'Réservations Actives', 
+      value: reservations.filter(r => r.status === 'CONFIRMED' || r.status === 'CHECKED_IN').length, 
+      icon: <PaymentsIcon sx={{ fontSize: 50 }} />, 
+      gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)'
+    },
+    { 
+      title: 'Historique', 
+      value: reservations.filter(r => r.status === 'CHECKED_OUT' || r.status === 'CANCELLED').length, 
+      icon: <Star sx={{ fontSize: 50 }} />, 
+      gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)'
+    },
   ];
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
-        <Typography variant="h6">Loading dashboard...</Typography>
+      <Box className="dashboard-container">
+        <Box display="flex" flexDirection="column" justifyContent="center" alignItems="center" minHeight="400px">
+          <CircularProgress size={60} thickness={4} sx={{ mb: 2, color: '#1976d2' }} />
+          <Typography variant="h6" color="textSecondary">Chargement de votre tableau de bord...</Typography>
+        </Box>
       </Box>
     );
   }
 
   if (error) {
     return (
-      <Alert severity="error" sx={{ mt: 4 }}>
-        {error}
-      </Alert>
+      <Box className="dashboard-container">
+        <Alert severity="error" sx={{ mt: 4, borderRadius: 2 }}>
+          {error}
+        </Alert>
+      </Box>
     );
   }
 
   return (
-    <Box>
-      <Typography variant="h4" gutterBottom>
-        Client Dashboard
-      </Typography>
-      
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        {statsData.map((stat, index) => (
-          <Grid item xs={12} sm={6} md={3} key={index}>
-            <Card sx={{ height: '100%', display: 'flex', alignItems: 'center', p: 2 }}>
-              <Box sx={{ color: stat.color, mr: 2 }}>
-                {stat.icon}
-              </Box>
-              <CardContent>
-                <Typography variant="h6" component="div">
-                  {stat.title}
+    <Box className="dashboard-container" sx={{ width: '100%' }}>
+      <Fade in={true} timeout={800}>
+        <Box sx={{ width: '100%' }}>
+          <Box className="dashboard-header">
+            <Box>
+              <Typography variant="h3" className="dashboard-title" gutterBottom>
+                <AccountCircle sx={{ mr: 2, verticalAlign: 'middle' }} />
+                Mon Tableau de Bord
+              </Typography>
+              {userInfo && (
+                <Typography variant="body1" color="textSecondary" sx={{ mt: 1 }}>
+                  Bienvenue, {userInfo.firstName} {userInfo.lastName} !
                 </Typography>
-                <Typography variant="h4" component="div" sx={{ fontWeight: 'bold' }}>
-                  {stat.value}
-                </Typography>
-              </CardContent>
-            </Card>
+              )}
+            </Box>
+            <Chip 
+              label="CLIENT" 
+              color="success" 
+              sx={{ fontSize: '0.9rem', fontWeight: 'bold', px: 1 }}
+            />
+          </Box>
+          
+          <Grid container spacing={3} sx={{ mb: 4 }}>
+            {statsData.map((stat, index) => (
+              <Grid item xs={12} sm={6} md={3} key={index}>
+                <Grow in={true} timeout={600 + index * 100}>
+                  <Card 
+                    className="stat-card"
+                    sx={{
+                      background: stat.gradient,
+                      color: 'white',
+                      position: 'relative',
+                      overflow: 'hidden',
+                      '&:hover': {
+                        transform: 'translateY(-8px)',
+                        boxShadow: '0 12px 24px rgba(0,0,0,0.2)',
+                      },
+                      transition: 'all 0.3s ease-in-out',
+                    }}
+                  >
+                    <Box className="stat-card-pattern" />
+                    <CardContent sx={{ position: 'relative', zIndex: 1 }}>
+                      <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
+                        <Box sx={{ 
+                          bgcolor: 'rgba(255,255,255,0.2)', 
+                          borderRadius: 2, 
+                          p: 1.5,
+                          backdropFilter: 'blur(10px)'
+                        }}>
+                          {stat.icon}
+                        </Box>
+                        <Typography variant="h2" sx={{ fontWeight: 'bold', fontSize: '2.5rem' }}>
+                          {stat.value}
+                        </Typography>
+                      </Box>
+                      <Typography variant="h6" sx={{ fontWeight: 500, opacity: 0.95 }}>
+                        {stat.title}
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Grow>
+              </Grid>
+            ))}
           </Grid>
-        ))}
-      </Grid>
 
-      <Grid container spacing={4}>
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                My Reservations
-              </Typography>
-              <TableContainer component={Paper}>
-                <Table size="small">
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Room</TableCell>
-                      <TableCell>Check-in</TableCell>
-                      <TableCell>Check-out</TableCell>
-                      <TableCell>Status</TableCell>
-                      <TableCell>Total</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {reservations.slice(0, 5).map((reservation, index) => (
-                      <TableRow key={index}>
-                        <TableCell>{reservation.roomNumber}</TableCell>
-                        <TableCell>{reservation.checkInDate}</TableCell>
-                        <TableCell>{reservation.checkOutDate}</TableCell>
-                        <TableCell>{reservation.status}</TableCell>
-                        <TableCell>${reservation.totalAmount}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </CardContent>
-          </Card>
-        </Grid>
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={8}>
+              <Grow in={true} timeout={1000}>
+                <Card className="feature-card">
+                  <CardContent>
+                    <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold', mb: 2 }}>
+                      <ReservationsIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+                      Mes Réservations
+                    </Typography>
+                    {reservations.length > 0 ? (
+                      <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
+                        <Table size="small">
+                          <TableHead>
+                            <TableRow sx={{ bgcolor: '#f5f5f5' }}>
+                              <TableCell><strong>Chambre</strong></TableCell>
+                              <TableCell><strong>Check-in</strong></TableCell>
+                              <TableCell><strong>Check-out</strong></TableCell>
+                              <TableCell><strong>Statut</strong></TableCell>
+                            </TableRow>
+                          </TableHead>
+                          <TableBody>
+                            {reservations.slice(0, 5).map((reservation, index) => (
+                              <TableRow key={index} hover>
+                                <TableCell>{reservation.room?.number || 'N/A'}</TableCell>
+                                <TableCell>{reservation.checkInDate || 'N/A'}</TableCell>
+                                <TableCell>{reservation.checkOutDate || 'N/A'}</TableCell>
+                                <TableCell>
+                                  <Chip 
+                                    label={reservation.status || 'N/A'} 
+                                    size="small"
+                                    color={
+                                      reservation.status === 'CONFIRMED' ? 'success' :
+                                      reservation.status === 'CHECKED_IN' ? 'primary' :
+                                      reservation.status === 'CHECKED_OUT' ? 'default' :
+                                      'error'
+                                    }
+                                  />
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </TableContainer>
+                    ) : (
+                      <Box textAlign="center" py={4}>
+                        <Typography variant="body1" color="textSecondary">
+                          Aucune réservation pour le moment
+                        </Typography>
+                        <Button variant="contained" sx={{ mt: 2 }} startIcon={<ReservationsIcon />}>
+                          Faire une réservation
+                        </Button>
+                      </Box>
+                    )}
+                  </CardContent>
+                </Card>
+              </Grow>
+            </Grid>
 
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                My Payments
-              </Typography>
-              <TableContainer component={Paper}>
-                <Table size="small">
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Date</TableCell>
-                      <TableCell>Amount</TableCell>
-                      <TableCell>Method</TableCell>
-                      <TableCell>Status</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {payments.slice(0, 5).map((payment, index) => (
-                      <TableRow key={index}>
-                        <TableCell>{payment.date}</TableCell>
-                        <TableCell>${payment.amount}</TableCell>
-                        <TableCell>{payment.method}</TableCell>
-                        <TableCell>{payment.status}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
-
-      <Grid container spacing={4} sx={{ mt: 2 }}>
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Messages
-              </Typography>
-              <TableContainer component={Paper}>
-                <Table size="small">
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>From</TableCell>
-                      <TableCell>Subject</TableCell>
-                      <TableCell>Date</TableCell>
-                      <TableCell>Status</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {messages.slice(0, 5).map((message, index) => (
-                      <TableRow key={index}>
-                        <TableCell>{message.from}</TableCell>
-                        <TableCell>{message.subject}</TableCell>
-                        <TableCell>{message.date}</TableCell>
-                        <TableCell>{message.status}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-              <Box sx={{ mt: 2, textAlign: 'center' }}>
-                <Button variant="outlined" startIcon={<ChatIcon />}>Send Message</Button>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Payment Options
-              </Typography>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <Button variant="contained" color="primary" size="large">
-                  Pay with Visa
-                </Button>
-                <Button variant="outlined" size="large">
-                  Pay with Mastercard
-                </Button>
-                <Button variant="outlined" size="large">
-                  Pay with PayPal
-                </Button>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+            <Grid item xs={12} md={4}>
+              <Grow in={true} timeout={1200}>
+                <Card className="feature-card">
+                  <CardContent>
+                    <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold', mb: 2 }}>
+                      Options Rapides
+                    </Typography>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                      <Button 
+                        variant="contained" 
+                        color="primary" 
+                        size="large"
+                        startIcon={<ReservationsIcon />}
+                        fullWidth
+                        sx={{ py: 1.5, borderRadius: 2 }}
+                      >
+                        Nouvelle Réservation
+                      </Button>
+                      <Button 
+                        variant="outlined" 
+                        size="large"
+                        startIcon={<ChatIcon />}
+                        fullWidth
+                        sx={{ py: 1.5, borderRadius: 2 }}
+                      >
+                        Contacter le Support
+                      </Button>
+                      <Button 
+                        variant="outlined" 
+                        size="large"
+                        startIcon={<PaymentsIcon />}
+                        fullWidth
+                        sx={{ py: 1.5, borderRadius: 2 }}
+                      >
+                        Mes Paiements
+                      </Button>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grow>
+            </Grid>
+          </Grid>
+        </Box>
+      </Fade>
     </Box>
   );
 };

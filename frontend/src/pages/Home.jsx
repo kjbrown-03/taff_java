@@ -121,7 +121,7 @@ const Home = () => {
 
     try {
       // Call the authentication service to login with name, phone, and password
-      const response = await api.post('/auth/login', {
+      const response = await api.post('/api/auth/login', {
         username: loginForm.username,
         password: loginForm.password
       });

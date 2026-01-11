@@ -7,14 +7,13 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDate;
 import java.util.List;
 
 @Repository
 public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
     // Paiements par réservation
-    List<Payment> findByReservationId(Long reservationId);
+    List<Payment> findByReservation_Id(Long reservationId);
 
     // Paiements par statut
     List<Payment> findByStatus(PaymentStatus status);

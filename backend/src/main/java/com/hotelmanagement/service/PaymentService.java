@@ -51,7 +51,7 @@ public class PaymentService {
 
     // Corrigé : bonne méthode
     public List<Payment> getPaymentsByReservationId(Long reservationId) {
-        return paymentRepository.findByReservationId(reservationId);
+        return paymentRepository.findByReservation_Id(reservationId);
     }
 
     public Payment updatePaymentStatus(Long id, String status) {

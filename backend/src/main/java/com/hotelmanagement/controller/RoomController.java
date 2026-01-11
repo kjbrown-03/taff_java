@@ -3,6 +3,8 @@ package com.hotelmanagement.controller;
 import com.hotelmanagement.dto.RoomDto;
 import com.hotelmanagement.mapper.MapperService;
 import com.hotelmanagement.model.Room;
+import com.hotelmanagement.model.RoomType;
+import com.hotelmanagement.repository.RoomTypeRepository;
 import com.hotelmanagement.service.RoomService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -23,6 +25,9 @@ public class RoomController {
     
     @Autowired
     private MapperService mapperService;
+    
+    @Autowired
+    private RoomTypeRepository roomTypeRepository;
 
     @GetMapping
     public ResponseEntity<List<RoomDto>> getAllRooms() {
@@ -43,7 +48,13 @@ public class RoomController {
 
     @PostMapping
     public ResponseEntity<RoomDto> createRoom(@RequestBody RoomDto roomDto) {
+        // Manually handle roomType conversion
+        RoomType roomType = roomTypeRepository.findById(roomDto.getRoomTypeId())
+                .orElseThrow(() -> new RuntimeException("Room type not found with id: " + roomDto.getRoomTypeId()));
+        
         Room room = mapperService.map(roomDto, Room.class);
+        room.setRoomType(roomType);
+        
         Room savedRoom = roomService.createRoom(room);
         RoomDto savedRoomDto = mapperService.map(savedRoom, RoomDto.class);
         return ResponseEntity.ok(savedRoomDto);

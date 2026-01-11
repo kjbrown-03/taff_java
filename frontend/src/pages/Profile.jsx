@@ -15,10 +15,12 @@ import {
   InputLabel
 } from '@mui/material';
 import { CameraAlt as CameraIcon } from '@mui/icons-material';
+import { useTranslation } from 'react-i18next';
 import AuthService from '../services/authService';
 import api from '../services/api';
 
 const Profile = () => {
+  const { t, i18n } = useTranslation();
   const [user, setUser] = useState({
     name: '',
     email: '',
@@ -28,14 +30,11 @@ const Profile = () => {
   const [profileImage, setProfileImage] = useState(null);
   const [imagePreview, setImagePreview] = useState('');
   const [language, setLanguage] = useState('en');
-  const [availableLanguages, setAvailableLanguages] = useState([
+  const [availableLanguages] = useState([
     { code: 'en', name: 'English' },
     { code: 'fr', name: 'Français' },
     { code: 'es', name: 'Español' }
   ]);
-  const [newLanguageCode, setNewLanguageCode] = useState('');
-  const [newLanguageName, setNewLanguageName] = useState('');
-  const [showAddLanguage, setShowAddLanguage] = useState(false);
   const [loading, setLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
@@ -54,17 +53,14 @@ const Profile = () => {
     }
 
     // Load language preference
-    const savedLanguage = localStorage.getItem('language');
-    if (savedLanguage) {
-      setLanguage(savedLanguage);
+    const savedLanguage = localStorage.getItem('language') || 'en';
+    setLanguage(savedLanguage);
+    
+    // Set the language in i18n
+    if (i18n && savedLanguage) {
+      i18n.changeLanguage(savedLanguage);
     }
-
-    // Load available languages from localStorage
-    const savedLanguages = localStorage.getItem('availableLanguages');
-    if (savedLanguages) {
-      setAvailableLanguages(JSON.parse(savedLanguages));
-    }
-  }, []);
+  }, [i18n]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -91,42 +87,10 @@ const Profile = () => {
     setLanguage(newLanguage);
     localStorage.setItem('language', newLanguage);
     
-    // Update i18n if available
-    const i18n = window.i18n || (window.__i18n || window.i18next);
+    // Update i18n using the hook
     if (i18n && i18n.changeLanguage) {
       i18n.changeLanguage(newLanguage);
     }
-  };
-
-  const handleAddLanguage = () => {
-    if (newLanguageCode && newLanguageName) {
-      const newLanguage = { code: newLanguageCode.toLowerCase(), name: newLanguageName };
-      
-      // Check if language already exists
-      const exists = availableLanguages.some(lang => lang.code === newLanguage.code);
-      if (!exists) {
-        const updatedLanguages = [...availableLanguages, newLanguage];
-        setAvailableLanguages(updatedLanguages);
-        localStorage.setItem('availableLanguages', JSON.stringify(updatedLanguages));
-        
-        // Reset form
-        setNewLanguageCode('');
-        setNewLanguageName('');
-        setSuccessMessage(`Language ${newLanguageName} added successfully!`);
-        
-        // Close the add language form
-        setShowAddLanguage(false);
-      } else {
-        setErrorMessage('Language code already exists');
-      }
-    } else {
-      setErrorMessage('Please enter both language code and name');
-    }
-  };
-
-  const toggleAddLanguageForm = () => {
-    setShowAddLanguage(!showAddLanguage);
-    setErrorMessage('');
   };
 
   const handleSubmit = async (e) => {
@@ -266,60 +230,6 @@ const Profile = () => {
                   ))}
                 </Select>
               </FormControl>
-            </Grid>
-
-            <Grid item xs={12}>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={toggleAddLanguageForm}
-                sx={{ mt: 2, mb: 2 }}
-              >
-                {showAddLanguage ? 'Cancel Add Language' : 'Add New Language'}
-              </Button>
-              
-              {showAddLanguage && (
-                <Box sx={{ mt: 2, p: 2, border: '1px solid #ccc', borderRadius: 1 }}>
-                  <Typography variant="h6" gutterBottom>Add New Language</Typography>
-                  <Grid container spacing={2}>
-                    <Grid item xs={12} md={6}>
-                      <TextField
-                        fullWidth
-                        label="Language Code"
-                        placeholder="e.g., de"
-                        value={newLanguageCode}
-                        onChange={(e) => setNewLanguageCode(e.target.value)}
-                        margin="normal"
-                      />
-                    </Grid>
-                    <Grid item xs={12} md={6}>
-                      <TextField
-                        fullWidth
-                        label="Language Name"
-                        placeholder="e.g., Deutsch"
-                        value={newLanguageName}
-                        onChange={(e) => setNewLanguageName(e.target.value)}
-                        margin="normal"
-                      />
-                    </Grid>
-                    <Grid item xs={12}>
-                      <Button
-                        variant="contained"
-                        onClick={handleAddLanguage}
-                        sx={{ mr: 1 }}
-                      >
-                        Add Language
-                      </Button>
-                      <Button
-                        variant="outlined"
-                        onClick={toggleAddLanguageForm}
-                      >
-                        Cancel
-                      </Button>
-                    </Grid>
-                  </Grid>
-                </Box>
-              )}
             </Grid>
 
             <Grid item xs={12}>

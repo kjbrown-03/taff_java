@@ -61,7 +61,17 @@ public class AuthService {
 
                 Map<String, Object> response = new HashMap<>();
                 response.put("token", jwt);
-                response.put("user", user);
+                response.put("tokenType", "Bearer");
+                response.put("user", Map.of(
+                    "id", user.getId(),
+                    "username", user.getUsername(),
+                    "email", user.getEmail(),
+                    "firstName", user.getFirstName(),
+                    "lastName", user.getLastName(),
+                    "role", user.getRole().getName(),
+                    "enabled", user.getEnabled()
+                ));
+                response.put("role", user.getRole().getName());
 
                 System.out.println("=== AUTHENTICATION COMPLETE ===");
                 return response;

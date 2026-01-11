@@ -1,474 +1,308 @@
 import { useState, useEffect } from 'react';
 import { 
+  Box, 
   Grid, 
   Card, 
   CardContent, 
   Typography, 
-  Box, 
-  Button,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
+  CircularProgress,
   Alert,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  IconButton,
+  Fade,
+  Grow,
   Chip,
-  MenuItem,
-  Select,
-  FormControl,
-  InputLabel,
-  Tabs,
-  Tab,
-  CircularProgress
+  LinearProgress
 } from '@mui/material';
 import { 
-  MeetingRoom as RoomsIcon,
-  BookOnline as ReservationsIcon,
-  People as GuestsIcon,
-  Badge as StaffIcon,
-  RoomService as ServicesIcon,
-  Payment as PaymentsIcon,
-  Assessment as ReportsIcon,
-  AccessTime as TimesheetIcon,
-  Add as AddIcon,
-  Edit as EditIcon,
-  Delete as DeleteIcon,
-  Download as DownloadIcon,
-  History as HistoryIcon
+  People, 
+  MeetingRoom, 
+  AttachMoney, 
+  CalendarToday,
+  TrendingUp,
+  Hotel,
+  Assessment,
+  Security
 } from '@mui/icons-material';
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import api from '../../services/api';
+import './Dashboard.css';
 
 const AdminDashboard = () => {
   const [stats, setStats] = useState({
     totalRooms: 0,
+    availableRooms: 0,
     occupiedRooms: 0,
-    totalGuests: 0,
-    staffMembers: 0,
-    services: 0,
-    todayRevenue: 0
+    todaysRevenue: 0,
+    totalReservations: 0,
+    todaysPayments: 0
   });
-  
-  const [users, setUsers] = useState([]);
-  const [attendanceData, setAttendanceData] = useState([]);
-  const [occupancyData, setOccupancyData] = useState([]);
-  const [occupationRate, setOccupationRate] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [userDialogOpen, setUserDialogOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [userForm, setUserForm] = useState({ username: '', email: '', firstName: '', lastName: '', phone: '', role: 'CLIENT' });
-  const [tabValue, setTabValue] = useState(0);
-  const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
-
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    fetchDashboardData();
+    loadDashboardStats();
   }, []);
 
-  const fetchDashboardData = async () => {
+  const loadDashboardStats = async () => {
     try {
-      // Fetch dashboard statistics
-      const statsResponse = await api.get('/dashboard/stats');
-      setStats(statsResponse.data);
-      
-      // Fetch users for CRUD
-      const usersResponse = await api.get('/users');
-      setUsers(usersResponse.data);
-      
-      // Fetch attendance data
-      try {
-        const attendanceResponse = await api.get(`/reports/staff-attendance?startDate=2024-01-01&endDate=2024-12-31`);
-        setAttendanceData(attendanceResponse.data.attendanceData || []);
-      } catch (e) {
-        console.error('Error fetching attendance:', e);
-      }
-      
-      // Fetch occupancy data
-      const occupancyResponse = await api.get('/reports/occupation');
-      setOccupationRate(occupancyResponse.data.currentOccupationRate || 0);
-      
-      const occupancyChartData = [
-        { name: 'Occupied', value: occupancyResponse.data.occupiedRooms || 0 },
-        { name: 'Available', value: occupancyResponse.data.availableRooms || 0 },
-      ];
-      setOccupancyData(occupancyChartData);
+      setLoading(true);
+      setError('');
+      const response = await api.get('/api/dashboard/admin');
+      const data = response.data;
+      setStats({
+        totalRooms: data.totalRooms || 0,
+        availableRooms: data.availableRooms || 0,
+        occupiedRooms: data.occupiedRooms || 0,
+        todaysRevenue: data.todaysRevenue || 0,
+        totalReservations: data.totalReservations || 0,
+        todaysPayments: data.todaysPayments || 0
+      });
     } catch (err) {
-      setError('Failed to load dashboard data');
-      console.error('Error fetching dashboard data:', err);
+      console.error('Error loading stats:', err);
+      setError('Erreur lors du chargement des statistiques. Vérifiez votre connexion.');
+      setStats({
+        totalRooms: 0,
+        availableRooms: 0,
+        occupiedRooms: 0,
+        todaysRevenue: 0,
+        totalReservations: 0,
+        todaysPayments: 0
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  const handleCreateUser = () => {
-    setSelectedUser(null);
-    setUserForm({ username: '', email: '', firstName: '', lastName: '', phone: '', role: 'CLIENT' });
-    setUserDialogOpen(true);
-  };
-
-  const handleEditUser = (user) => {
-    setSelectedUser(user);
-    setUserForm({
-      username: user.username || '',
-      email: user.email || '',
-      firstName: user.firstName || '',
-      lastName: user.lastName || '',
-      phone: user.phone || '',
-      role: user.role?.name || user.role || 'CLIENT'
-    });
-    setUserDialogOpen(true);
-  };
-
-  const handleDeleteUser = async (userId) => {
-    if (window.confirm('Are you sure you want to delete this user?')) {
-      try {
-        await api.delete(`/users/${userId}`);
-        fetchDashboardData();
-      } catch (err) {
-        setError('Failed to delete user');
-      }
+  const statCards = [
+    {
+      title: 'Chambres Totales',
+      value: stats.totalRooms,
+      icon: <Hotel sx={{ fontSize: 50 }} />,
+      color: '#1976d2',
+      gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      bgColor: '#f3e5f5'
+    },
+    {
+      title: 'Chambres Disponibles',
+      value: stats.availableRooms,
+      icon: <MeetingRoom sx={{ fontSize: 50 }} />,
+      color: '#2e7d32',
+      gradient: 'linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%)',
+      bgColor: '#e8f5e9'
+    },
+    {
+      title: 'Chambres Occupées',
+      value: stats.occupiedRooms,
+      icon: <People sx={{ fontSize: 50 }} />,
+      color: '#ed6c02',
+      gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+      bgColor: '#fff3e0'
+    },
+    {
+      title: 'Revenus du Jour',
+      value: `€${stats.todaysRevenue.toLocaleString('fr-FR', { minimumFractionDigits: 2 })}`,
+      icon: <AttachMoney sx={{ fontSize: 50 }} />,
+      color: '#2e7d32',
+      gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+      bgColor: '#e0f2f1'
     }
-  };
-
-  const handleSaveUser = async () => {
-    try {
-      if (selectedUser) {
-        await api.put(`/users/${selectedUser.id}`, userForm);
-      } else {
-        await api.post('/users', { ...userForm, password: 'defaultPassword123' });
-      }
-      setUserDialogOpen(false);
-      fetchDashboardData();
-    } catch (err) {
-      setError('Failed to save user');
-    }
-  };
-
-  const handleGenerateAbsenceReport = async () => {
-    try {
-      const response = await api.get(`/reports/absences?month=${selectedMonth}`, {
-        responseType: 'blob'
-      });
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `absences-report-${selectedMonth}.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-    } catch (err) {
-      // If PDF not available, try Excel
-      try {
-        const response = await api.get(`/reports/absences?month=${selectedMonth}&format=excel`, {
-          responseType: 'blob'
-        });
-        const url = window.URL.createObjectURL(new Blob([response.data]));
-        const link = document.createElement('a');
-        link.href = url;
-        link.setAttribute('download', `absences-report-${selectedMonth}.xlsx`);
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-      } catch (e) {
-        setError('Failed to generate report');
-      }
-    }
-  };
-
-  const statsData = [
-    { title: 'Total Rooms', value: stats.totalRooms, icon: <RoomsIcon sx={{ fontSize: 40 }} />, color: '#1976d2' },
-    { title: 'Occupied Rooms', value: stats.occupiedRooms, icon: <ReservationsIcon sx={{ fontSize: 40 }} />, color: '#4caf50' },
-    { title: 'Total Guests', value: stats.totalGuests, icon: <GuestsIcon sx={{ fontSize: 40 }} />, color: '#ff9800' },
-    { title: 'Staff Members', value: stats.staffMembers, icon: <StaffIcon sx={{ fontSize: 40 }} />, color: '#9c27b0' },
-    { title: 'Services', value: stats.services, icon: <ServicesIcon sx={{ fontSize: 40 }} />, color: '#f44336' },
-    { title: 'Today\'s Revenue', value: `$${stats.todayRevenue?.toFixed(2) || '0.00'}`, icon: <PaymentsIcon sx={{ fontSize: 40 }} />, color: '#00bcd4' },
   ];
+
+  const occupancyRate = stats.totalRooms > 0 
+    ? Math.round((stats.occupiedRooms / stats.totalRooms) * 100) 
+    : 0;
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
-        <CircularProgress />
+      <Box className="dashboard-container">
+        <Box display="flex" flexDirection="column" justifyContent="center" alignItems="center" minHeight="400px">
+          <CircularProgress size={60} thickness={4} sx={{ mb: 2, color: '#1976d2' }} />
+          <Typography variant="h6" color="textSecondary">Chargement des statistiques...</Typography>
+        </Box>
       </Box>
     );
   }
 
-  if (error) {
-    return (
-      <Alert severity="error" sx={{ mt: 4 }}>
-        {error}
-      </Alert>
-    );
-  }
-
   return (
-    <Box>
-      <Typography variant="h4" gutterBottom>
-        Admin Dashboard
-      </Typography>
-      
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        {statsData.map((stat, index) => (
-          <Grid item xs={12} sm={6} md={4} key={index}>
-            <Card sx={{ height: '100%', display: 'flex', alignItems: 'center', p: 2 }}>
-              <Box sx={{ color: stat.color, mr: 2 }}>
-                {stat.icon}
-              </Box>
-              <CardContent>
-                <Typography variant="h6" component="div">
-                  {stat.title}
-                </Typography>
-                <Typography variant="h4" component="div" sx={{ fontWeight: 'bold' }}>
-                  {stat.value}
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
-
-      <Card sx={{ mb: 4 }}>
-        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-          <Tabs value={tabValue} onChange={(e, v) => setTabValue(v)}>
-            <Tab label="Users Management" />
-            <Tab label="Attendance & Reports" />
-            <Tab label="Room Occupancy" />
-            <Tab label="History & Logs" />
-          </Tabs>
-        </Box>
-
-        {/* Users Management Tab */}
-        {tabValue === 0 && (
-          <Box sx={{ p: 3 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-              <Typography variant="h6">Users Management</Typography>
-              <Button variant="contained" startIcon={<AddIcon />} onClick={handleCreateUser}>
-                Add User
-              </Button>
-            </Box>
-            <TableContainer component={Paper}>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Username</TableCell>
-                    <TableCell>Email</TableCell>
-                    <TableCell>Name</TableCell>
-                    <TableCell>Phone</TableCell>
-                    <TableCell>Role</TableCell>
-                    <TableCell>Actions</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {users.map((user) => (
-                    <TableRow key={user.id}>
-                      <TableCell>{user.username}</TableCell>
-                      <TableCell>{user.email}</TableCell>
-                      <TableCell>{user.firstName} {user.lastName}</TableCell>
-                      <TableCell>{user.phone || '-'}</TableCell>
-                      <TableCell>
-                        <Chip label={user.role?.name || user.role || 'CLIENT'} size="small" />
-                      </TableCell>
-                      <TableCell>
-                        <IconButton size="small" onClick={() => handleEditUser(user)}>
-                          <EditIcon />
-                        </IconButton>
-                        <IconButton size="small" onClick={() => handleDeleteUser(user.id)}>
-                          <DeleteIcon />
-                        </IconButton>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </Box>
-        )}
-
-        {/* Attendance & Reports Tab */}
-        {tabValue === 1 && (
-          <Box sx={{ p: 3 }}>
-            <Typography variant="h6" gutterBottom>
-              Staff Attendance & Absences
+    <Box className="dashboard-container" sx={{ width: '100%' }}>
+      <Fade in={true} timeout={800}>
+        <Box sx={{ width: '100%' }}>
+          <Box className="dashboard-header">
+            <Typography variant="h3" className="dashboard-title" gutterBottom>
+              <Security sx={{ mr: 2, verticalAlign: 'middle' }} />
+              Tableau de Bord Administrateur
             </Typography>
-            <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
-              <TextField
-                type="month"
-                label="Select Month"
-                value={selectedMonth}
-                onChange={(e) => setSelectedMonth(e.target.value)}
-                InputLabelProps={{ shrink: true }}
-              />
-              <Button
-                variant="contained"
-                startIcon={<DownloadIcon />}
-                onClick={handleGenerateAbsenceReport}
-              >
-                Generate Absence Report (PDF/Excel)
-              </Button>
-            </Box>
-            <TableContainer component={Paper}>
-              <Table size="small">
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Staff Name</TableCell>
-                    <TableCell>Role</TableCell>
-                    <TableCell>Status</TableCell>
-                    <TableCell>Hours</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {attendanceData.length > 0 ? (
-                    attendanceData.slice(0, 10).map((attendance, index) => (
-                      <TableRow key={index}>
-                        <TableCell>{attendance.name || attendance.staffName || '-'}</TableCell>
-                        <TableCell>{attendance.role || '-'}</TableCell>
-                        <TableCell>
-                          <Chip 
-                            label={attendance.status || 'UNKNOWN'} 
-                            color={attendance.status === 'PRESENT' ? 'success' : 'error'} 
-                            size="small" 
-                          />
-                        </TableCell>
-                        <TableCell>{attendance.hours || attendance.hoursWorked || '-'}</TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={4} align="center">No attendance data available</TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </TableContainer>
+            <Chip 
+              label="ADMIN" 
+              color="error" 
+              sx={{ fontSize: '0.9rem', fontWeight: 'bold', px: 1 }}
+            />
           </Box>
-        )}
-
-        {/* Room Occupancy Tab */}
-        {tabValue === 2 && (
-          <Box sx={{ p: 3 }}>
-            <Typography variant="h6" gutterBottom>
-              Room Occupancy Rate: {occupationRate.toFixed(1)}%
-            </Typography>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={occupancyData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
-                  {occupancyData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-                <Legend />
-              </PieChart>
-            </ResponsiveContainer>
-          </Box>
-        )}
-
-        {/* History & Logs Tab */}
-        {tabValue === 3 && (
-          <Box sx={{ p: 3 }}>
-            <Typography variant="h6" gutterBottom>
-              System History & Logs
-            </Typography>
-            <Alert severity="info">
-              Logs functionality would be implemented with auditing. Currently showing placeholder.
-            </Alert>
-            <TableContainer component={Paper} sx={{ mt: 2 }}>
-              <Table size="small">
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Timestamp</TableCell>
-                    <TableCell>Action</TableCell>
-                    <TableCell>User</TableCell>
-                    <TableCell>Details</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  <TableRow>
-                    <TableCell colSpan={4} align="center">No logs available</TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </Box>
-        )}
-      </Card>
-
-      {/* User Dialog */}
-      <Dialog open={userDialogOpen} onClose={() => setUserDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>{selectedUser ? 'Edit User' : 'Create User'}</DialogTitle>
-        <DialogContent>
-          <TextField
-            fullWidth
-            label="Username"
-            value={userForm.username}
-            onChange={(e) => setUserForm({ ...userForm, username: e.target.value })}
-            margin="normal"
-          />
-          <TextField
-            fullWidth
-            label="Email"
-            type="email"
-            value={userForm.email}
-            onChange={(e) => setUserForm({ ...userForm, email: e.target.value })}
-            margin="normal"
-          />
-          <TextField
-            fullWidth
-            label="First Name"
-            value={userForm.firstName}
-            onChange={(e) => setUserForm({ ...userForm, firstName: e.target.value })}
-            margin="normal"
-          />
-          <TextField
-            fullWidth
-            label="Last Name"
-            value={userForm.lastName}
-            onChange={(e) => setUserForm({ ...userForm, lastName: e.target.value })}
-            margin="normal"
-          />
-          <TextField
-            fullWidth
-            label="Phone"
-            value={userForm.phone}
-            onChange={(e) => setUserForm({ ...userForm, phone: e.target.value })}
-            margin="normal"
-          />
-          <FormControl fullWidth margin="normal">
-            <InputLabel>Role</InputLabel>
-            <Select
-              value={userForm.role}
-              label="Role"
-              onChange={(e) => setUserForm({ ...userForm, role: e.target.value })}
+          
+          {error && (
+            <Alert 
+              severity="warning" 
+              sx={{ 
+                mb: 3, 
+                borderRadius: 2,
+                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+              }}
+              onClose={() => setError('')}
             >
-              <MenuItem value="ADMIN">Admin</MenuItem>
-              <MenuItem value="CLIENT">Client</MenuItem>
-              <MenuItem value="EMPLOYEE">Employee</MenuItem>
-            </Select>
-          </FormControl>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setUserDialogOpen(false)}>Cancel</Button>
-          <Button onClick={handleSaveUser} variant="contained">Save</Button>
-        </DialogActions>
-      </Dialog>
+              {error}
+            </Alert>
+          )}
+
+          <Grid container spacing={3} sx={{ mb: 4 }}>
+            {statCards.map((card, index) => (
+              <Grid item xs={12} sm={6} md={3} key={index}>
+                <Grow in={true} timeout={600 + index * 100}>
+                  <Card 
+                    className="stat-card"
+                    sx={{
+                      background: card.gradient,
+                      color: 'white',
+                      position: 'relative',
+                      overflow: 'hidden',
+                      '&:hover': {
+                        transform: 'translateY(-8px)',
+                        boxShadow: '0 12px 24px rgba(0,0,0,0.2)',
+                      },
+                      transition: 'all 0.3s ease-in-out',
+                    }}
+                  >
+                    <Box className="stat-card-pattern" />
+                    <CardContent sx={{ position: 'relative', zIndex: 1 }}>
+                      <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
+                        <Box sx={{ 
+                          bgcolor: 'rgba(255,255,255,0.2)', 
+                          borderRadius: 2, 
+                          p: 1.5,
+                          backdropFilter: 'blur(10px)'
+                        }}>
+                          {card.icon}
+                        </Box>
+                        <Typography variant="h2" sx={{ fontWeight: 'bold', fontSize: '2.5rem' }}>
+                          {card.value}
+                        </Typography>
+                      </Box>
+                      <Typography variant="h6" sx={{ fontWeight: 500, opacity: 0.95 }}>
+                        {card.title}
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Grow>
+              </Grid>
+            ))}
+          </Grid>
+
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={8}>
+              <Grow in={true} timeout={1000}>
+                <Card className="feature-card">
+                  <CardContent>
+                    <Box display="flex" alignItems="center" mb={3}>
+                      <Assessment sx={{ fontSize: 40, color: '#1976d2', mr: 2 }} />
+                      <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
+                        Statistiques Détaillées
+                      </Typography>
+                    </Box>
+                    
+                    <Box mb={3}>
+                      <Box display="flex" justifyContent="space-between" mb={1}>
+                        <Typography variant="body1" color="textSecondary">
+                          Taux d'occupation
+                        </Typography>
+                        <Typography variant="body1" fontWeight="bold">
+                          {occupancyRate}%
+                        </Typography>
+                      </Box>
+                      <LinearProgress 
+                        variant="determinate" 
+                        value={occupancyRate} 
+                        sx={{ 
+                          height: 10, 
+                          borderRadius: 5,
+                          bgcolor: '#e0e0e0',
+                          '& .MuiLinearProgress-bar': {
+                            background: 'linear-gradient(90deg, #667eea 0%, #764ba2 100%)',
+                            borderRadius: 5
+                          }
+                        }}
+                      />
+                    </Box>
+
+                    <Grid container spacing={2}>
+                      <Grid item xs={6}>
+                        <Box className="mini-stat-box">
+                          <CalendarToday sx={{ fontSize: 30, color: '#1976d2', mb: 1 }} />
+                          <Typography variant="h4" fontWeight="bold">
+                            {stats.totalReservations}
+                          </Typography>
+                          <Typography variant="body2" color="textSecondary">
+                            Réservations Total
+                          </Typography>
+                        </Box>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Box className="mini-stat-box">
+                          <TrendingUp sx={{ fontSize: 30, color: '#2e7d32', mb: 1 }} />
+                          <Typography variant="h4" fontWeight="bold">
+                            {stats.todaysPayments}
+                          </Typography>
+                          <Typography variant="body2" color="textSecondary">
+                            Paiements Aujourd'hui
+                          </Typography>
+                        </Box>
+                      </Grid>
+                    </Grid>
+                  </CardContent>
+                </Card>
+              </Grow>
+            </Grid>
+
+            <Grid item xs={12} md={4}>
+              <Grow in={true} timeout={1200}>
+                <Card className="feature-card">
+                  <CardContent>
+                    <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold', mb: 2 }}>
+                      Fonctionnalités Administrateur
+                    </Typography>
+                    <Typography variant="body2" color="textSecondary" paragraph>
+                      En tant qu'administrateur, vous avez accès à toutes les fonctionnalités du système :
+                    </Typography>
+                    <Box component="ul" sx={{ pl: 2, m: 0 }}>
+                      {[
+                        'Gestion complète des chambres et types de chambres',
+                        'Gestion des réservations et des clients',
+                        'Gestion du personnel et des départements',
+                        'Génération de rapports détaillés',
+                        'Configuration du système',
+                        'Gestion des services et prestations'
+                      ].map((item, idx) => (
+                        <Box component="li" key={idx} sx={{ mb: 1.5 }}>
+                          <Typography variant="body2" sx={{ display: 'flex', alignItems: 'start' }}>
+                            <Chip 
+                              label="✓" 
+                              size="small" 
+                              sx={{ 
+                                mr: 1, 
+                                bgcolor: '#4caf50', 
+                                color: 'white',
+                                height: 20,
+                                fontSize: '0.7rem'
+                              }} 
+                            />
+                            {item}
+                          </Typography>
+                        </Box>
+                      ))}
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grow>
+            </Grid>
+          </Grid>
+        </Box>
+      </Fade>
     </Box>
   );
 };

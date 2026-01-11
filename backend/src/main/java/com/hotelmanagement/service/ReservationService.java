@@ -39,14 +39,14 @@ public class ReservationService {
 
     // Récupérer les réservations d'un guest (par guestId)
     public List<ReservationDto> getReservationsByGuestId(Long guestId) {
-        return reservationRepository.findByGuestId(guestId).stream()
+        return reservationRepository.findByGuest_Id(guestId).stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
     }
 
     // Récupérer les réservations par chambre
     public List<ReservationDto> getReservationsByRoomId(Long roomId) {
-        return reservationRepository.findByRoomId(roomId).stream()
+        return reservationRepository.findByRoom_Id(roomId).stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
     }
